@@ -258,6 +258,17 @@ module Estrategias
             puts exception
             puts "Estrategia Sesgada Funciona con: #{arg}"
         end
+
+        arg = {:Piedra => 1, :Piedra => 2, :Lagarto => 1.4, :Spock => 3}
+        begin
+            s = Sesgada.new(arg)
+            puts "Estrategia Sesgada Funciona con: #{arg}"
+            puts s.movimientos
+        rescue => exception
+            puts exception
+            puts "Estrategia Sesgada No Funciona con: #{arg}"
+            return false
+        end
         
         return true
     end
