@@ -153,7 +153,47 @@ module Jugadas
         end
     end
 
-    def test_jugadas()
+    # Retorna la Jugada asociada al simbolo. Retorna nil si no hay una Jugada asociada
+    def Jugadas.symbol_to_jugada(s)
+        case s
+            when :Piedra
+                return Piedra.new
+            when :Papel
+                return Papel.new
+            when :Tijera
+                return Tijera.new
+            when :Lagarto
+                return Lagarto.new
+            when :Spock
+                return Spock.new
+        end
+        return nil
+    end
+
+    # Convierte un string en una jugada, si es valido
+    def Jugadas.to_jugada(s) 
+        if ! s.kind_of?(String)
+            raise ArgumentError, "Jugadas.to_jugada requiere un string como argumento"
+        end
+
+        s.downcase!
+        case s
+            when "piedra"
+                return Piedra.new
+            when "papel"
+                return Papel.new
+            when "tijera"
+                return Tijera.new
+            when "lagarto"
+                return Lagarto.new
+            when "spock"
+                return Spock.new
+        end
+        return nil
+    end
+
+    # Pruebas de Jugadas
+    def Jugadas.test_jugadas()
         ju = Jugada.new
         arr = [Piedra.new, Papel.new, Tijera.new, Lagarto.new, Spock.new]
 
