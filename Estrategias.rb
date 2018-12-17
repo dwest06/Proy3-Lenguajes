@@ -20,6 +20,10 @@ module Estrategias
         # Generar Proxima Jugada. Donde se recibe una Jugada para su posible utilizacion en la generacion
         # de la siguiente Jugada.
         def prox(m)
+            if m == nil
+                return
+            end
+
             if !(m.class <= Jugadas::Jugada)
                 raise ArgumentError, "Error \"#{m.to_s}\" no es una Jugada Valida" 
             end
@@ -259,7 +263,9 @@ module Estrategias
             puts "Estrategia Sesgada Funciona con: #{arg}"
         end
 
-        arg = {:Piedra => 1, :Piedra => 2, :Lagarto => 1.4, :Spock => 3}
+        puts ""
+
+        arg = {:Piedra => 1, :Lagarto => 1.4, :Spock => 3}
         begin
             s = Sesgada.new(arg)
             puts "Estrategia Sesgada Funciona con: #{arg}"
