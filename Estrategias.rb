@@ -23,7 +23,6 @@ module Estrategias
             if m == nil
                 return
             end
-
             if !(m.class <= Jugadas::Jugada)
                 raise ArgumentError, "Error \"#{m.to_s}\" no es una Jugada Valida" 
             end
@@ -183,6 +182,56 @@ module Estrategias
         end
     end
 
+    # Clase Estrategia Copiar
+    class Copiar < Estrategia
+
+        # Movimiento inicial
+        attr_reader :mov_inicial
+        # Movimiento inicial
+        attr_reader :mov_anterior
+
+        # Constructor de Estrategia Copiar. Recibe un Movimiento valido para iniciar
+        def initialize(movimiento)
+
+            if movimiento.class != Symbol
+                @inicial = movimiento.clone
+            else
+                @inicial = Jugadas.symbol_to_jugada(movimiento)
+            end
+
+            if !(@inicial.class <= Jugadas::Jugada)
+                raise RuntimeError , "Error de Movimiento Inicial, \"#{movimiento.to_s}\" no es una Jugada Valida" 
+            end
+            if @inicial.class == Jugadas::Jugada
+                raise RuntimeError , "Error de Movimiento Inicial, \"#{movimiento.to_s}\" no es una Jugada suficientemente instanciada" 
+            end
+
+            reset()
+        end
+
+        # Representacion string de una Estrategia Copiar
+        def to_s()
+            "#{super()} Copiar"
+        end
+
+        # Generar Proxima Jugada. Donde se recibe la Jugada pasada del oponente 
+        # para su utilizacion en la generacion de la siguiente Jugada.
+        def prox(m)
+            super(m)
+            if m != nil
+                @mov_anterior = m.clone
+            else
+                reset()
+            end
+            return @mov_anterior
+        end
+
+        # Lleva la Estrategia Copiar a su estado inicial
+        def reset()
+            @mov_anterior = @inicial.clone
+        end
+    end
+
     # Pruebas de Estrategias
     def Estrategias.test_estrategias()
         require './UserInput.rb'
@@ -273,6 +322,64 @@ module Estrategias
         rescue => exception
             puts exception
             puts "Estrategia Sesgada No Funciona con: #{arg}"
+            return false
+        end
+
+        puts ""
+
+        arg = nil
+        begin
+            c = Copiar.new(arg)
+            puts "Estrategia Copiar No Funciona con: #{arg}"
+            return false
+        rescue => exception
+            puts exception
+            puts "Estrategia Copiar Funciona con: #{arg}"
+        end
+
+        puts ""
+
+        arg = :a
+        begin
+            c = Copiar.new(arg)
+            puts "Estrategia Copiar No Funciona con: #{arg}"
+            return false
+        rescue => exception
+            puts exception
+            puts "Estrategia Copiar Funciona con: #{arg}"
+        end
+        
+        puts ""
+
+        arg = "wat"
+        begin
+            c = Copiar.new(arg)
+            puts "Estrategia Copiar No Funciona con: #{arg}"
+            return false
+        rescue => exception
+            puts exception
+            puts "Estrategia Copiar Funciona con: #{arg}"
+        end
+
+        puts ""
+
+        arg = :Piedra
+        begin
+            c = Copiar.new(arg)
+            r = c.prox(nil)
+            if !(r.class == Jugadas::Piedra)
+                raise RuntimeError, "Prox no devolvio una Jugada Piedra, sino #{r}"
+            end
+            puts "Estrategia Copiar Funciona con: #{arg}"
+            other = Jugadas::Spock.new
+            r = c.prox(other)
+            if !(r.class == other.class)
+                raise RuntimeError, "Prox no devolvio un Jugada Spock, sino #{r}"
+            end
+            puts "Estrategia Copiar Funciona con Prox de: #{r}"
+        rescue => exception
+            puts exception
+            puts "Estrategia Copiar No Funciona con: #{arg}"
             return false
         end
         
