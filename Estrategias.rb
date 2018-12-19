@@ -49,7 +49,7 @@ module Estrategias
 
         # Representacion string de una Estrategia Manual
         def to_s()
-            "#{super()} Manual"
+            "#{super()} Manual con callback=#{@callback}"
         end
 
         # Generar Proxima Jugada. Donde se recibe una Jugada para su posible utilizacion en la generacion
@@ -106,14 +106,14 @@ module Estrategias
 
         # Representacion string de una Estrategia Uniforme
         def to_s()
-            "#{super()} Uniforme"
+            "#{super()} Uniforme con movimientos=#{@movimientos} y rng=#{@rng}"
         end
 
         # Generar Proxima Jugada. Donde se recibe una Jugada para su posible utilizacion en la generacion
         # de la siguiente Jugada.
         def prox(m)
             super(m)
-            @movimientos.sample(1, random: @rng)[0]
+            @movimientos.sample(1, random: @rng)[0].clone
         end
 
         # Lleva la Estrategia Uniforme a su estado inicial de rng
@@ -162,7 +162,7 @@ module Estrategias
 
         # Representacion string de una Estrategia Sesgada
         def to_s()
-            "#{super()} Sesgada"
+            "#{super()} Sesgada con movimientos=#{@movimientos} y rng=#{@rng}"
         end
 
         # Generar Proxima Jugada. Donde se recibe una Jugada para su posible utilizacion en la generacion
@@ -171,7 +171,7 @@ module Estrategias
             super(m)
             prob = @rng.rand(1.0)
             movimientos.keys.each { |k|
-                return k if prob <= movimientos[k]
+                return k.clone if prob <= movimientos[k]
                 prob -= movimientos[k]
             }
         end
@@ -211,7 +211,7 @@ module Estrategias
 
         # Representacion string de una Estrategia Copiar
         def to_s()
-            "#{super()} Copiar"
+            "#{super()} Copiar con mov_inicial=#{@mov_inicial} y mov_anterior=#{@mov_anterior}"
         end
 
         # Generar Proxima Jugada. Donde se recibe la Jugada pasada del oponente 
@@ -223,12 +223,109 @@ module Estrategias
             else
                 reset()
             end
-            return @mov_anterior
+            return @mov_anterior.clone
         end
 
         # Lleva la Estrategia Copiar a su estado inicial
         def reset()
             @mov_anterior = @inicial.clone
+        end
+    end
+
+    # Clase Estrategia Pensar
+    class Pensar < Estrategia
+
+        # Cantidad de Piedras vistas
+        attr_reader :r
+
+        # Cantidad de Papel vistas
+        attr_reader :p
+
+        # Cantidad de Tijeras vistas
+        attr_reader :t
+
+        # Cantidad de Lagartos vistas
+        attr_reader :l
+
+        # Cantidad de Spocks vistas
+        attr_reader :s
+
+        # Cantidad de Jugadas vistas
+        attr_reader :acc
+
+        # Constructor de Estrategia Pensar
+        def initialize
+            reset()
+        end
+
+        # Representacion string de una Estrategia Pensar
+        def to_s()
+            "#{super()} Pensar con r=#{@r}, p=#{@p}, t=#{@t}, l=#{@l}, s=#{@s}, acc=#{@acc} y rng=#{@rng}"
+        end
+
+        # Generar Proxima Jugada. Donde se recibe una Jugada para su posible utilizacion en la generacion
+        # de la siguiente Jugada.
+        def prox(m)
+            super(m)
+
+            analizar(m)
+
+            prob = @rng.rand(@acc)
+
+            if prob < @r
+                return Jugadas::Piedra.new
+            end
+            
+            prob -= @r
+
+            if prob < @p
+                return Jugadas::Papel.new
+            end
+
+            prob -= @p
+
+            if prob < @t
+                return Jugadas::Tijera.new
+            end
+
+            prob -= @t
+
+            if prob < @l
+                return Jugadas::Lagarto.new
+            end
+            
+            return Jugadas::Spock.new
+        end
+
+        # Lleva la estrategia a su estado inicial de rng y de vistas
+        def reset()
+            @rng = Random.new(SEED)
+            @r = 1
+            @p = 1
+            @t = 1
+            @l = 1
+            @s = 1
+            @acc = @r + @p + @t + @l + @s
+        end
+
+        def analizar(j)
+            case j
+                when Jugadas::Piedra
+                    @r += 1
+                    @acc += 1
+                when Jugadas::Papel
+                    @p += 1
+                    @acc += 1
+                when Jugadas::Tijera
+                    @t += 1
+                    @acc += 1
+                when Jugadas::Lagarto
+                    @l += 1
+                    @acc += 1
+                when Jugadas::Spock
+                    @s += 1
+                    @acc += 1
+            end
         end
     end
 
@@ -381,6 +478,17 @@ module Estrategias
             puts exception
             puts "Estrategia Copiar No Funciona con: #{arg}"
             return false
+        end
+
+        puts ""
+
+        begin
+            p = Pensar.new
+            p.prox(nil)
+            puts "Estrategia Pensar Funciona con: nil"
+        rescue => exception
+            puts exception
+            puts "Estrategia Pensar No Funciona con: nil"
         end
         
         return true
