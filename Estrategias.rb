@@ -489,6 +489,22 @@ module Estrategias
         rescue => exception
             puts exception
             puts "Estrategia Pensar No Funciona con: nil"
+            return false
+        end
+
+        puts ""
+
+        begin
+            p = Pensar.new
+            p.prox(Jugadas::Piedra.new)
+            if p.r != 2
+                raise RuntimeError, "Se esperaba que observara 2 piedras"
+            end
+            puts "Estrategia Pensar Funciona con: Jugada Piedra"
+        rescue => exception
+            puts exception
+            puts "Estrategia Pensar No Funciona con: Jugada Piedra"
+            return false
         end
         
         return true
