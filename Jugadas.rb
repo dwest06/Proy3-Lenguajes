@@ -16,7 +16,7 @@ module Jugadas
         # 
         # @param Jugada j : Jugada a la cual comparar para calcular los puntos entre dos jugadas.
         # 
-        # @return [Int] : arreglo de dos posiciones representando el puntaje
+        # @return [Integer] : arreglo de dos posiciones representando el puntaje
         def puntos(j)
             if !(j.class <= Jugada)
                 raise ArgumentError, "Error \"#{j.to_s}\" no es una Jugada Valida" 
@@ -42,7 +42,7 @@ module Jugadas
         # 
         # @param Jugada j : Jugada a la cual comparar para calcular los puntos entre dos jugadas.
         # 
-        # @return [Int] : arreglo de dos posiciones representando el puntaje
+        # @return [Integer] : arreglo de dos posiciones representando el puntaje
         def puntos(j)
             super(j)
 
@@ -75,7 +75,7 @@ module Jugadas
         # 
         # @param Jugada j : Jugada a la cual comparar para calcular los puntos entre dos jugadas.
         # 
-        # @return [Int] : arreglo de dos posiciones representando el puntaje
+        # @return [Integer] : arreglo de dos posiciones representando el puntaje
         def puntos(j)
             super(j)
             case j
@@ -107,7 +107,7 @@ module Jugadas
         # 
         # @param Jugada j : Jugada a la cual comparar para calcular los puntos entre dos jugadas.
         # 
-        # @return [Int] : arreglo de dos posiciones representando el puntaje
+        # @return [Integer] : arreglo de dos posiciones representando el puntaje
         def puntos(j)
             super(j)
             case j
@@ -139,7 +139,7 @@ module Jugadas
         # 
         # @param Jugada j : Jugada a la cual comparar para calcular los puntos entre dos jugadas.
         # 
-        # @return [Int] : arreglo de dos posiciones representando el puntaje
+        # @return [Integer] : arreglo de dos posiciones representando el puntaje
         def puntos(j)
             super(j)
             case j
@@ -171,7 +171,7 @@ module Jugadas
         # 
         # @param Jugada j : Jugada a la cual comparar para calcular los puntos entre dos jugadas.
         # 
-        # @return [Int] : arreglo de dos posiciones representando el puntaje
+        # @return [Integer] : arreglo de dos posiciones representando el puntaje
         def puntos(j)
             super(j)
             case j
@@ -191,9 +191,9 @@ module Jugadas
 
     # Retorna la Jugada asociada al simbolo. Retorna nil si no hay una Jugada asociada
     # 
-    # @param Symbol s : Simbolo a convertir a una Jugada
+    # @param Symbol s : Simbolo a convertir a una Jugada [:Piedra, :Papel, :Tijera, :Lagarto, :Spock]
     # 
-    # @return [Jugada,nil] : Jugada obtenida del Simbolo, nil en caso de no ser un simbolo valido
+    # @return Jugada,nil : Jugada obtenida del Simbolo, nil en caso de no ser un simbolo valido
     def Jugadas.symbol_to_jugada(s)
         case s
             when :Piedra
@@ -212,9 +212,9 @@ module Jugadas
 
     # Convierte un string en una jugada, si es valido
     # 
-    # @param Symbol s : Simbolo a convertir a una Jugada
+    # @param String s : String a convertir a una Jugada
     # 
-    # @return Jugada : Jugada obtenida del Simbolo, nil en caso de no ser un simbolo valido
+    # @return Jugada : Jugada obtenida del String, nil en caso de no ser un String valido
     def Jugadas.to_jugada(s) 
         if ! s.kind_of?(String)
             raise ArgumentError, "Jugadas.to_jugada requiere un string como argumento"

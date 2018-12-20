@@ -1,6 +1,4 @@
-=begin
-    Manejador de Estrategias    
-=end
+# Manejador de Estrategias  
 module Estrategias
 
     # Modulo de Jugadas
@@ -13,12 +11,18 @@ module Estrategias
         SEED = 42
 
         # Representacion string de una Estrategia
+        #
+        # @return String con representacion de Estrategia
         def to_s()
             "Estrategia"
         end
         
         # Generar Proxima Jugada. Donde se recibe una Jugada para su posible utilizacion en la generacion
         # de la siguiente Jugada.
+        # 
+        # @param Jugada m : Jugada anterior del contrincante. En caso de no ser una Jugada suficientemente instanciada, levanta excepcion
+        # 
+        # @return Jugada,nil : Jugada generada o nil
         def prox(m)
             if m == nil
                 return
@@ -42,18 +46,27 @@ module Estrategias
         # Manejador de Input de Usuario
         attr_accessor :callback
 
-        # Constructor de Estrategia Manual. Recibe un callback que no tome argumentos y retorne una jugada
+        # Constructor de Estrategia Manual. Recibe un callback que no tome argumentos y retorne una Jugada
+        #
+        # @param Proc callback : Funcion a la que llamar para obtener una Jugada del usuario,
+        # esta no toma argumentos y devuelve una Jugada valida. En caso contrario levanta excepcion al generar prox
         def initialize(callback)
             @callback = callback
         end
 
         # Representacion string de una Estrategia Manual
+        #
+        # @return String con representacion de Estrategia Manual
         def to_s()
             "#{super()} Manual con callback=#{@callback}"
         end
 
         # Generar Proxima Jugada. Donde se recibe una Jugada para su posible utilizacion en la generacion
         # de la siguiente Jugada.
+        # 
+        # @param Jugada m : Jugada anterior del contrincante. En caso de no ser una Jugada suficientemente instanciada, levanta excepcion
+        # 
+        # @return Jugada,nil : Jugada generada o nil
         def prox(m)
             super(m)
             begin
@@ -78,7 +91,10 @@ module Estrategias
         # Movimientos para generar uniformemente
         attr_reader :movimientos
 
-        # Constructor de Estrategia Uniforme. Recibe una lista de Movimientos validos para usar
+        # Constructor de Estrategia Uniforme. Recibe una lista de Movimientos validos para usar.
+        # Esta lista tiene que ser no vacia y tener al menos un simbolo valido o levanta excepcion
+        #
+        # @param [Symbol] movimientos : Lista de Symbol representando Jugadas validas [:Piedra, :Papel, :Tijera, :Lagarto, :Spock]
         def initialize(movimientos)
 
             if ! movimientos.kind_of?(Array)
@@ -105,12 +121,18 @@ module Estrategias
         end
 
         # Representacion string de una Estrategia Uniforme
+        #
+        # @return String con representacion de Estrategia Uniforme
         def to_s()
             "#{super()} Uniforme con movimientos=#{@movimientos} y rng=#{@rng}"
         end
 
         # Generar Proxima Jugada. Donde se recibe una Jugada para su posible utilizacion en la generacion
         # de la siguiente Jugada.
+        # 
+        # @param Jugada m : Jugada anterior del contrincante. En caso de no ser una Jugada suficientemente instanciada, levanta excepcion
+        # 
+        # @return Jugada,nil : Jugada generada o nil
         def prox(m)
             super(m)
             @movimientos.sample(1, random: @rng)[0].clone
@@ -128,7 +150,11 @@ module Estrategias
         # Movimientos para generar sesgadamente
         attr_reader :movimientos
 
-        # Constructor de Estrategia Sesgada. Recibe un Hash de los posibles movimientos y sus probabilidades
+        # Constructor de Estrategia Sesgada.
+        # Recibe un Hash de los posibles movimientos y sus probabilidades (deben ser mayores a 0)
+        #
+        # @param {Symbol => Numeric} : Hash de los posibles movimientos (Symbol) y sus probabilidades (Numeric).
+        # En caso de estar vacio o no tener algun movimiento y probabilidad valido, levanta excepcion
         def initialize(movimientos)
 
             if ! movimientos.kind_of?(Hash)
@@ -161,12 +187,18 @@ module Estrategias
         end
 
         # Representacion string de una Estrategia Sesgada
+        #
+        # @return String con representacion de Estrategia Sesgada
         def to_s()
             "#{super()} Sesgada con movimientos=#{@movimientos} y rng=#{@rng}"
         end
 
         # Generar Proxima Jugada. Donde se recibe una Jugada para su posible utilizacion en la generacion
         # de la siguiente Jugada.
+        # 
+        # @param Jugada m : Jugada anterior del contrincante. En caso de no ser una Jugada suficientemente instanciada, levanta excepcion
+        # 
+        # @return Jugada,nil : Jugada generada o nil
         def prox(m)
             super(m)
             prob = @rng.rand(1.0)
@@ -187,10 +219,13 @@ module Estrategias
 
         # Movimiento inicial
         attr_reader :mov_inicial
-        # Movimiento inicial
+        # Movimiento anterior del contrincante
         attr_reader :mov_anterior
 
         # Constructor de Estrategia Copiar. Recibe un Movimiento valido para iniciar
+        #
+        # @param Symbol movimiento : Jugada inicial de Estrategia Copiar, tiene que ser un Simbolo valido de Jugadas [:Piedra, :Papel, :Tijera, :Lagarto, :Spock].
+        # En caso de no ser valido, levanta excepcion
         def initialize(movimiento)
 
             if movimiento.class != Symbol
@@ -210,12 +245,18 @@ module Estrategias
         end
 
         # Representacion string de una Estrategia Copiar
+        #
+        # @return String con representacion de Estrategia Copiar
         def to_s()
             "#{super()} Copiar con mov_inicial=#{@mov_inicial} y mov_anterior=#{@mov_anterior}"
         end
 
         # Generar Proxima Jugada. Donde se recibe la Jugada pasada del oponente 
         # para su utilizacion en la generacion de la siguiente Jugada.
+        # 
+        # @param Jugada m : Jugada anterior del contrincante. En caso de no ser una Jugada suficientemente instanciada, levanta excepcion
+        # 
+        # @return Jugada,nil : Jugada generada o nil
         def prox(m)
             super(m)
             if m != nil
@@ -259,12 +300,18 @@ module Estrategias
         end
 
         # Representacion string de una Estrategia Pensar
+        #
+        # @return String con representacion de Estrategia Pensar
         def to_s()
             "#{super()} Pensar con r=#{@r}, p=#{@p}, t=#{@t}, l=#{@l}, s=#{@s}, acc=#{@acc} y rng=#{@rng}"
         end
 
         # Generar Proxima Jugada. Donde se recibe una Jugada para su posible utilizacion en la generacion
         # de la siguiente Jugada.
+        # 
+        # @param Jugada m : Jugada anterior del contrincante. En caso de no ser una Jugada suficientemente instanciada, levanta excepcion
+        # 
+        # @return Jugada,nil : Jugada generada o nil
         def prox(m)
             super(m)
 
@@ -308,6 +355,9 @@ module Estrategias
             @acc = @r + @p + @t + @l + @s
         end
 
+        # Analiza una Jugada del contrincante para guardar haberla visto
+        #
+        # @param Jugada j : Jugada a analizar
         def analizar(j)
             case j
                 when Jugadas::Piedra

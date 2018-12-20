@@ -1,10 +1,12 @@
-=begin
-    Manejador de Input de Usuario    
-=end
+# Manejador de Input de Usuario    
 module UserInput
+
+    # Modulo de Jugadas
     require './Jugadas.rb'
 
     # Devuelve lambda que puede obtener una Jugada de usuario por consola
+    #
+    # @return Proc : Lambda que maneja obtener input de usuario por consola y lo convierte a una Jugada
     def UserInput.from_console()
         return lambda {
             prompt = "> "

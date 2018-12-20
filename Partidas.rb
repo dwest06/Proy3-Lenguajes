@@ -1,6 +1,4 @@
-=begin
-    Manejador de Partidas    
-=end
+# Manejador de Partidas    
 module Partidas
 
     # Modulo de Estrategias
@@ -21,6 +19,10 @@ module Partidas
         # Jugada de la Ronda Anterior
         attr_reader :prev_play
 
+        # Genera una nueva partida a partir de un mapa de Nombres de Jugadores y sus Estrategias. 
+        # Este mapa debe contener dos jugadores (Symbol) y sus estrategias (Estrategia)
+        #
+        # @param {Symbol => Estrategia} Mapa de dos Jugadores y dos Estrategias. En caso de no contenerlas, levanta excepcion
         def initialize(jugadores)
 
             if ! jugadores.kind_of?(Hash)
@@ -71,6 +73,8 @@ module Partidas
         end
 
         # Jugar una ronda
+        #
+        # @return {Symbol => Integer} : Devuelve un mapa con los nombres de jugadores y sus puntas. Ademas, se incluye la cantidad de rondas
         def ronda
             p1 = @jugadores.keys[0]
             p2 = @jugadores.keys[1]
@@ -92,12 +96,20 @@ module Partidas
         end
 
         # Revisar si una variable es un entero positivo
+        #
+        # @param Integer n : Entero a revisar
+        #
+        # @return Bool : Si es un entero positivo
         def self.check_positive_int(n)
             return n.is_a?(Integer) && n > 0
         end
 
         # Jugar n rondas, siendo n un numero positivo. 
         #   Devuelve los resultados de jugar las rondas en un Hash
+        #
+        # @param Integer n : Entero que representa cuantas rondas jugar. En caso de no ser un Entero positivo, levanta excepcion
+        #
+        # @return {Symbol => Integer} : Devuelve un mapa con los nombres de jugadores y sus puntas. Ademas, se incluye la cantidad de rondas
         def rondas(n)
             if ! Partida.check_positive_int(n)
                 raise ArgumentError, "Error \"#{n.to_s}\" no es un entero positivo requerido para jugar Rondas" 
@@ -114,6 +126,10 @@ module Partidas
         #   Devuelve los resultados de jugar las rondas en un Hash
         # Peligro, existen combinaciones de estrategias (indecidibles de saber) que pueden hacer 
         #   que quede en loop infinito. Ej: 2 Copiar con el mismo inicio
+        #
+        # @param Integer n : Entero que representa el puntaje a esperar. En caso de no ser un Entero positivo, levanta excepcion
+        #
+        # @return {Symbol => Integer} : Devuelve un mapa con los nombres de jugadores y sus puntas. Ademas, se incluye la cantidad de rondas
         def alcanzar(n)
             if ! Partida.check_positive_int(n)
                 raise ArgumentError, "Error \"#{n.to_s}\" no es un entero positivo requerido para jugar Alcanzar" 
