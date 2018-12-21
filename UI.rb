@@ -225,9 +225,9 @@ Shoes.app(title: "Piedra, Papel, Tijeras, Lagarto, Spock") {
             end
         end
         flow :margin => 6, :width => '100%' do
-            @iniciar_juego = button "Iniciar Partida"
-            @detener_juego = button "Detener Partida"
-            @reiniciar_juego = button "Reiniciar Partida"
+            @iniciar_juego = button "Iniciar Partida", width: '33%'
+            @detener_juego = button "Detener Partida", width: '33%'
+            @reiniciar_juego = button "Reiniciar Partida", width: '33%'
         end
     end
 
