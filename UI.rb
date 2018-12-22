@@ -1,10 +1,10 @@
 
+require './Partidas.rb'
 
 Shoes.app(title: "Piedra, Papel, Tijeras, Lagarto, Spock") {
 
-    background "#EFC"
-    border("#BE8",
-           strokewidth: 6)
+    background("#EFC")
+    border("#BE8", strokewidth: 6)
     
     # General Config
     @players_background = "#FF9499"
@@ -15,17 +15,65 @@ Shoes.app(title: "Piedra, Papel, Tijeras, Lagarto, Spock") {
     @players_jugadas = {
         "Piedra" => :Piedra, "Papel" => :Papel, 
         "Tijera" => :Tijera, "Lagarto" => :Lagarto, "Spock" => :Spock}
+
+    # P1 GUI
+    @p1_player_name = :P1
+    @p1_estrategia_selector = nil
+    @p1_estrategia_text = nil
+    @p1_estrategia = nil # Symbol
+    @p1_strategy_stack = nil
+    @p1_uniform_options = [] # [[check,name]]
+    @p1_bias_options = [] # [[check,name,n_text]]
+    @p1_copy_options = nil # list_box
+
+    # P2 GUI
+    @p2_player_name = :P2
+    @p2_estrategia_selector = nil
+    @p2_estrategia_text = nil
+    @p2_estrategia = nil # Symbol
+    @p2_strategy_stack = nil
+    @p2_uniform_options = [] # [[check,name]]
+    @p2_bias_options = [] # [[check,name,n_text]]
+    @p2_copy_options = nil # list_box
+
+    # Manual Config
+    @manual_ready = :Ready
+    @manual_buttons = :Buttons
+    @manual_option = :Option 
+    @manual_callback = :Callback 
+    @manual_options = {@p1_player_name => nil, @p2_player_name => nil}
+    @manual_player_string_name = {@p1_player_name => "Jugador 1", @p2_player_name => "Jugador 2"}.freeze
+
+    # Prop de juego
+    @juego_iniciado = false
+    @juego_partida = nil
+    @juego_manuales = []
+
+    # UI de Juego
+    @iniciar_juego = nil
+    @reiniciar_juego = nil
+    @detener_juego = nil
     
     # Revisa un string y solo deja los caracteres validos de un float sin signo
     def check_float(t) 
         t.gsub(/[^\d\.]+/, '').squeeze(".")
+        dot_acc = 0
+        for i in 0...(t.length) do
+            if t[i] == '.'
+                if dot_acc >= 1
+                    t[i] = ''
+                end
+                dot_acc += 1
+            end
+        end
+        return t
     end
     
     # Genera las opciones de la estrategia uniforme
     def generate_uniform_options()
         checks = @players_jugadas.keys.map do |name|
-            flow { @c = check; para name }
-            [@c, name]
+            flow { c = check; para name }
+            [c, name]
         end
         para "Se tiene que seleccionar por lo menos una opcion", size: "xx-small"
         return checks
@@ -56,21 +104,11 @@ Shoes.app(title: "Piedra, Papel, Tijeras, Lagarto, Spock") {
     # Genera las opciones de la estrategia sesgada
     def generate_bias_options()
         checks = @players_jugadas.keys.map do |name|
-            flow { @c = check; para name; @n = edit_line "1.0", width: 100, margin: 4, align: "center";}
-            @n.change { |t|
-                s = check_float(t.text()) 
-                dot_acc = 0
-                for i in 0...(s.length) do
-                    if s[i] == '.'
-                        if dot_acc >= 1
-                            s[i] = ''
-                        end
-                        dot_acc += 1
-                    end
-                end
-                t.text = s
+            flow { c = check; para name; n = edit_line "1.0", width: 100, margin: 4, align: "center";}
+            n.change { |t|
+                t.text = check_float(t.text()) 
             }
-            [@c, name, @n]
+            [c, name, n]
         end
         para "Se tiene que seleccionar por lo menos una opcion. Se necesita una opcion con probabilidad mayor a cero", size: "xx-small"
         return checks
@@ -81,7 +119,10 @@ Shoes.app(title: "Piedra, Papel, Tijeras, Lagarto, Spock") {
     def get_bias_options(contenedor)
         contenedor.reduce({}) { |acc, res| 
             num = res[2].text().to_f().abs()
-            acc[@players_jugadas[res[1]]] = num if res[0].checked? && num > 0 
+            if res[0].checked? && num > 0 
+                acc[@players_jugadas[res[1]]] = num 
+            end
+            acc
         }
     end
 
@@ -128,31 +169,80 @@ Shoes.app(title: "Piedra, Papel, Tijeras, Lagarto, Spock") {
         return res
     end
 
-    # P1 GUI
-    @p1_estrategia_selector = nil
-    @p1_estrategia_text = nil
-    @p1_estrategia = nil # Symbol
-    @p1_strategy_stack = nil
-    @p1_uniform_options = [] # [[check,name]]
-    @p1_bias_options = [] # [[check,name,n_text]]
-    @p1_copy_options = nil # list_box
+    # Genera las opciones de Estrategia Manual de un Jugador
+    def generate_manual_options(player_name) 
+        @manual_options[player_name] = {}
+        @manual_options[player_name][@manual_ready] = false
+        @manual_options[player_name][@manual_option] = nil
 
-    # P2 GUI
-    @p2_estrategia_selector = nil
-    @p2_estrategia_text = nil
-    @p2_estrategia = nil # Symbol
-    @p2_strategy_stack = nil
-    @p2_uniform_options = [] # [[check,name]]
-    @p2_bias_options = [] # [[check,name,n_text]]
-    @p2_copy_options = nil # list_box
-    
-    # Prop de juego
-    @juego_iniciado = false
+        @manual_options[player_name][@manual_callback] = lambda { 
+            return Jugadas.symbol_to_jugada(@manual_options[player_name][@manual_option])
+        }
 
-    # UI de Juego
-    @iniciar_juego = nil
-    @reiniciar_juego = nil
-    @detener_juego = nil
+        @manual_options[player_name][@manual_buttons] = @players_jugadas.keys.map { |name|
+            b = button name, state: "disabled", margin_left: 4, width: 120
+            b.click {
+                @manual_options[player_name][@manual_option] = @players_jugadas[name]
+            }
+            b
+        }
+
+        aceptar = button "Aceptar Jugada", state: "disabled", margin_left: 4, width: 200
+        aceptar.click {
+            if get_manual_option(player_name) != nil
+                state_manual_options(player_name, "disabled")
+                @manual_options[player_name][@manual_ready] = true
+            else
+                alert "#{@manual_player_string_name[player_name]} no ha seleccionado una opcion para jugar"
+            end
+        }
+
+        @manual_options[player_name][@manual_buttons] << aceptar
+        para "Opciones de Estrategia Manual estan activas durante el juego. Para seleccionar una Jugada, "\
+            "darle al boton y luego a Aceptar Jugada", size: "xx-small"
+    end
+
+    # Obtener la opcion manual seleccionada por jugador
+    def get_manual_option(player_name) 
+        @manual_options[player_name][@manual_option]
+    end
+
+    # Obtener el callback manual de un jugador
+    def get_manual_callback(player_name) 
+        @manual_options[player_name][@manual_callback]
+    end
+
+    # Obtener el estatus de ready manual de un jugador
+    def get_manual_ready(player_name) 
+        @manual_options[player_name][@manual_ready]
+    end
+
+    # Cambiar el estado de las opciones de estrategia manual
+    def state_manual_options(player_name, state)
+        @manual_options[player_name][@manual_buttons].each { |btn|
+            btn.state = state
+        }
+    end
+
+    # Cambiar el estado de estrategia manual a no seleccionado
+    def reset_manual_option(player_name)
+        @manual_options[player_name][@manual_option] = nil
+    end
+
+    # Revisa Si los jugadores aplicaron sus jugadas manuales en caso de haber
+    def check_manuals_ready()
+        @juego_manuales.all? { |player_name|
+            get_manual_ready(player_name) 
+        }
+    end
+
+    # Reinicia la seleccion manual de los jugadores luego de una ronda
+    def reset_manuals_ready()
+        @juego_manuales.each { |player_name|
+            reset_manual_option(player_name)
+            state_manual_options(player_name, nil)
+        }
+    end
 
     # Control Central
     stack(margin: 6, width: '100%', height: '100%') do
@@ -170,7 +260,7 @@ Shoes.app(title: "Piedra, Papel, Tijeras, Lagarto, Spock") {
 
                         @p1_estrategia = @players_estrategias[list.text]
 
-                        @p1_strategy_stack.hidden = @p1_estrategia == :Pensar || @p1_estrategia == :Manual
+                        @p1_strategy_stack.hidden = @p1_estrategia == :Pensar
                         @p1_strategy_stack.clear()
                         if !@p1_strategy_stack.hidden
                             @p1_strategy_stack.append do
@@ -182,6 +272,8 @@ Shoes.app(title: "Piedra, Papel, Tijeras, Lagarto, Spock") {
                                         @p1_bias_options = generate_bias_options()
                                     when :Copiar
                                         @p1_copy_options = generate_copy_options()
+                                    when :Manual
+                                        generate_manual_options(@p1_player_name)
                                 end 
                             end
                         end
@@ -203,7 +295,7 @@ Shoes.app(title: "Piedra, Papel, Tijeras, Lagarto, Spock") {
 
                         @p2_estrategia = @players_estrategias[list.text]
 
-                        @p2_strategy_stack.hidden = @p2_estrategia == :Pensar || @p2_estrategia == :Manual
+                        @p2_strategy_stack.hidden = @p2_estrategia == :Pensar
                         @p2_strategy_stack.clear()
                         if !@p2_strategy_stack.hidden
                             @p2_strategy_stack.append do
@@ -215,6 +307,8 @@ Shoes.app(title: "Piedra, Papel, Tijeras, Lagarto, Spock") {
                                         @p2_bias_options = generate_bias_options()
                                     when :Copiar
                                         @p2_copy_options = generate_copy_options()
+                                    when :Manual
+                                        generate_manual_options(@p2_player_name)
                                 end 
                             end
                         end
@@ -250,7 +344,10 @@ Shoes.app(title: "Piedra, Papel, Tijeras, Lagarto, Spock") {
             when :Sesgada
                 state_bias_options(@p1_bias_options, nil)
             when :Copiar
-                state_copy_options(@p1_copy_options, nil) 
+                state_copy_options(@p1_copy_options, nil)
+            when :Manual
+                state_manual_options(@p1_player_name, "disabled") 
+                reset_manual_option(@p1_player_name) 
         end
 
         case @p2_estrategia
@@ -260,8 +357,10 @@ Shoes.app(title: "Piedra, Papel, Tijeras, Lagarto, Spock") {
                 state_bias_options(@p2_bias_options, nil)
             when :Copiar
                 state_copy_options(@p2_copy_options, nil) 
+            when :Manual
+                state_manual_options(@p2_player_name, "disabled")  
+                reset_manual_option(@p2_player_name) 
         end
-
     end
 
     # Iniciar el juego
@@ -290,30 +389,51 @@ Shoes.app(title: "Piedra, Papel, Tijeras, Lagarto, Spock") {
             return;
         end
 
+        @juego_manuales = []
+        partida_args = {}
+        case @p1_estrategia
+            when :Uniforme
+                state_uniform_options(@p1_uniform_options, "disabled")
+                partida_args[@p1_player_name] = Estrategias::Uniforme.new(get_uniform_options(@p1_uniform_options))
+            when :Sesgada
+                state_bias_options(@p1_bias_options, "disabled")
+                partida_args[@p1_player_name] = Estrategias::Sesgada.new(get_bias_options(@p1_bias_options))
+            when :Copiar
+                state_copy_options(@p1_copy_options, "disabled")
+                partida_args[@p1_player_name] = Estrategias::Copiar.new(get_copy_options(@p1_copy_options))
+            when :Manual
+                state_manual_options(@p1_player_name, nil)
+                partida_args[@p1_player_name] = Estrategias::Manual.new(get_manual_callback(@p1_player_name))
+                @juego_manuales <<  @p1_player_name
+            when :Pensar
+                partida_args[@p1_player_name] = Estrategias::Pensar.new
+        end
+        
+        case @p2_estrategia
+            when :Uniforme
+                state_uniform_options(@p2_uniform_options, "disabled") 
+                partida_args[@p2_player_name] = Estrategias::Uniforme.new(get_uniform_options(@p2_uniform_options))
+            when :Sesgada
+                state_bias_options(@p2_bias_options, "disabled")
+                partida_args[@p2_player_name] = Estrategias::Sesgada.new(get_bias_options(@p2_bias_options)) 
+            when :Copiar
+                state_copy_options(@p2_copy_options, "disabled") 
+                partida_args[@p2_player_name] = Estrategias::Copiar.new(get_copy_options(@p2_copy_options))
+            when :Manual
+                state_manual_options(@p2_player_name, nil) 
+                partida_args[@p2_player_name] = Estrategias::Manual.new(get_manual_callback(@p2_player_name))
+                @juego_manuales <<  @p2_player_name
+            when :Pensar
+                partida_args[@p2_player_name] = Estrategias::Pensar.new   
+        end
+
+        @juego_partida = Partidas::Partida.new(partida_args)
         @juego_iniciado = true
         @iniciar_juego.state = "disabled" 
         @reiniciar_juego.state = nil
         @detener_juego.state = nil
         @p1_estrategia_selector.state = "disabled"  
         @p2_estrategia_selector.state = "disabled"  
-
-        case @p1_estrategia
-            when :Uniforme
-                state_uniform_options(@p1_uniform_options, "disabled") 
-            when :Sesgada
-                state_bias_options(@p1_bias_options, "disabled")
-            when :Copiar
-                state_copy_options(@p1_copy_options, "disabled")      
-        end
-        
-        case @p2_estrategia
-            when :Uniforme
-                state_uniform_options(@p2_uniform_options, "disabled") 
-            when :Sesgada
-                state_bias_options(@p2_bias_options, "disabled") 
-            when :Copiar
-                state_copy_options(@p2_copy_options, "disabled") 
-        end
     end
 
     @iniciar_juego.click {
@@ -323,28 +443,5 @@ Shoes.app(title: "Piedra, Papel, Tijeras, Lagarto, Spock") {
     @detener_juego.click {
         terminar_juego()
     }
-    
-
-    
-
-    
-    
+   
 }
-
-=begin 
-@wtf ||= false
-
-@shape = star(points: 5)
-motion do |left, top|
-    @shape.move left, top
-end
-@push = button "Push me"
-@note = para "Nothing pushed so far"
-@push.click {
-    @wtf = !@wtf
-    @note.replace "Aha! Click! #{@wtf}"
-}
-if @wtf 
-    @note2 = para "Test"
-end
-=end
