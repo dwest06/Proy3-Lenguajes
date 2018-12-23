@@ -597,7 +597,9 @@ Shoes.app(title: "Piedra, Papel, Tijeras, Lagarto, Spock", width: 800, height: 6
         reiniciar_juego()
     }
 
+    # Frames Per Second
     FPS = 30.0
+    # Tiempo de Actualizacion
     CHECK_TIME = 1.0 # sec
     last = now = Time.now
     animate = animate FPS do
