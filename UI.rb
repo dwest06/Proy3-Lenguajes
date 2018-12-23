@@ -26,6 +26,7 @@ Shoes.app(title: "Piedra, Papel, Tijeras, Lagarto, Spock") {
     @p1_uniform_options = [] # [[check,name]]
     @p1_bias_options = [] # [[check,name,n_text]]
     @p1_copy_options = nil # list_box
+    @p1_icon = nil
 
     # P2 GUI
     @p2_player_name = :P2
@@ -37,6 +38,7 @@ Shoes.app(title: "Piedra, Papel, Tijeras, Lagarto, Spock") {
     @p2_uniform_options = [] # [[check,name]]
     @p2_bias_options = [] # [[check,name,n_text]]
     @p2_copy_options = nil # list_box
+    @p2_icon = nil
 
     # Manual Config
     @manual_ready = :Ready
@@ -82,12 +84,34 @@ Shoes.app(title: "Piedra, Papel, Tijeras, Lagarto, Spock") {
         set_score(@p1_score, @p1_player_name, @juego_partida.resultados[@p1_player_name])
         set_score(@p2_score, @p2_player_name, @juego_partida.resultados[@p2_player_name])
         set_round(@juego_partida.resultados[@juego_partida.round_name])
+        set_icon(@p1_icon, get_prev_play(@p1_player_name))
+        set_icon(@p2_icon, get_prev_play(@p2_player_name))
     end
 
+    # Cambia el estado de la configuracion de la ronda
     def state_rounds_options(state)
         @modo_juego_selector.state = state
         @cantidad_editline_juego.state = state
         @iniciar_partida_juego.state = state
+    end
+
+    # Cambia la imagen de un jugador a su jugada anterior
+    def set_icon(contenedor, prev_play)
+        case prev_play
+            when Jugadas::Piedra
+                contenedor.path = "./icons/rock.png"
+            when Jugadas::Papel
+                contenedor.path = "./icons/paper.png"
+            when Jugadas::Tijera
+                contenedor.path = "./icons/scissor.png"
+            when Jugadas::Lagarto
+                contenedor.path = "./icons/lizard.png"
+            when Jugadas::Spock
+                contenedor.path = "./icons/spock.png"
+            when NilClass
+                contenedor.path = "./icons/nil.png"
+        end
+        debug("#{prev_play.to_s} : #{contenedor.path}")
     end
 
     # Revisa un string y solo deja los caracteres validos de un float sin signo
@@ -269,6 +293,7 @@ Shoes.app(title: "Piedra, Papel, Tijeras, Lagarto, Spock") {
     # Cambiar el estado de estrategia manual a no seleccionado
     def reset_manual_option(player_name)
         @manual_options[player_name][@manual_option] = nil
+        @manual_options[player_name][@manual_ready] = false
     end
 
     # Revisa Si los jugadores aplicaron sus jugadas manuales en caso de haber
@@ -279,10 +304,18 @@ Shoes.app(title: "Piedra, Papel, Tijeras, Lagarto, Spock") {
     end
 
     # Reinicia la seleccion manual de los jugadores luego de una ronda
-    def reset_manuals_ready()
+    def reset_manuals_options()
         @juego_manuales.each { |player_name|
             reset_manual_option(player_name)
             state_manual_options(player_name, nil)
+        }
+    end
+
+    # Deshabilita la seleccion manual de los jugadores luego de una ronda
+    def disable_manuals_options()
+        @juego_manuales.each { |player_name|
+            reset_manual_option(player_name)
+            state_manual_options(player_name, "disabled")
         }
     end
 
@@ -395,10 +428,15 @@ Shoes.app(title: "Piedra, Papel, Tijeras, Lagarto, Spock") {
                         @cantidad_juego = num
                         @juego_iniciado = true
                         state_rounds_options("disabled")
+                        reset_manuals_options()
                     else
                         alert "Para Iniciar las Rondas se requiere un numero mayor a 0"
                     end
                 }
+            end
+            flow :margin => 6, :width => '100%', :margin_left => 12 do
+                flow(width: '50%') {@p1_icon = image "./icons/init.png", width: '250px'}
+                flow(width: '50%') {@p2_icon = image "./icons/init.png", width: '250px'}
             end
         end
     end
@@ -486,7 +524,6 @@ Shoes.app(title: "Piedra, Papel, Tijeras, Lagarto, Spock") {
                 state_copy_options(@p1_copy_options, "disabled")
                 partida_args[@p1_player_name] = Estrategias::Copiar.new(get_copy_options(@p1_copy_options))
             when :Manual
-                state_manual_options(@p1_player_name, nil)
                 partida_args[@p1_player_name] = Estrategias::Manual.new(get_manual_callback(@p1_player_name))
                 @juego_manuales <<  @p1_player_name
             when :Pensar
@@ -504,7 +541,6 @@ Shoes.app(title: "Piedra, Papel, Tijeras, Lagarto, Spock") {
                 state_copy_options(@p2_copy_options, "disabled") 
                 partida_args[@p2_player_name] = Estrategias::Copiar.new(get_copy_options(@p2_copy_options))
             when :Manual
-                state_manual_options(@p2_player_name, nil) 
                 partida_args[@p2_player_name] = Estrategias::Manual.new(get_manual_callback(@p2_player_name))
                 @juego_manuales <<  @p2_player_name
             when :Pensar
@@ -522,8 +558,11 @@ Shoes.app(title: "Piedra, Papel, Tijeras, Lagarto, Spock") {
 
     # Reiniciar Juego
     def reiniciar_juego()
+        @juego_iniciado = false
         @juego_partida.reiniciar()
         update_game_ui()
+        state_rounds_options(nil)
+        disable_manuals_options()
     end
 
     @iniciar_juego.click {
@@ -538,10 +577,22 @@ Shoes.app(title: "Piedra, Papel, Tijeras, Lagarto, Spock") {
         reiniciar_juego()
     }
 
+    FPS = 30.0
+    CHECK_TIME = 3.0 # sec
     last = now = Time.now
     animate = animate FPS do
-      now = Time.now
-      game.update(now - last)
-      # rendering goes here
+        if @juego_iniciado
+            now = Time.now
+            if now - last > CHECK_TIME
+                if check_manuals_ready()
+                    @juego_partida.ronda()
+                    update_game_ui()
+                    reset_manuals_options()
+                end
+
+                last = Time.now
+            end
+        end
+        
     end
 }
