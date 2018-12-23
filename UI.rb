@@ -90,8 +90,8 @@ Shoes.app(title: "Piedra, Papel, Tijeras, Lagarto, Spock") {
 
     # Revisar si aun no se han corrido la cantidad correcta de rondas
     def check_rounds()
-        @cantidad_juego -= 1
-        return 0 <= @cantidad_juego
+        res = 0 < @cantidad_juego
+        return res
     end
 
     # Revisar si aun no se ha alcanzado la puntuacion indicada
@@ -607,6 +607,9 @@ Shoes.app(title: "Piedra, Papel, Tijeras, Lagarto, Spock") {
             if now - last > CHECK_TIME
                 if check_condition()
                     if check_manuals_ready()
+                        if @modo_juego == :Rondas
+                            @cantidad_juego -= 1
+                        end
                         @juego_partida.ronda()
                         update_game_ui()
                         reset_manuals_options()
