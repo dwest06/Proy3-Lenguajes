@@ -1,7 +1,7 @@
 
 require './Partidas.rb'
 
-Shoes.app(title: "Piedra, Papel, Tijeras, Lagarto, Spock") {
+Shoes.app(title: "Piedra, Papel, Tijeras, Lagarto, Spock", width: 800, height: 600) {
     
     # General Config
     @players_background = "#FF9499"
