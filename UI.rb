@@ -88,6 +88,27 @@ Shoes.app(title: "Piedra, Papel, Tijeras, Lagarto, Spock", width: 800, height: 6
         set_icon(@p2_icon, get_prev_play(@p2_player_name))
     end
 
+    # Revisar si aun no se han corrido la cantidad correcta de rondas
+    def check_rounds()
+        res = 0 < @cantidad_juego
+        return res
+    end
+
+    # Revisar si aun no se ha alcanzado la puntuacion indicada
+    def check_scope()
+        @juego_partida.resultados[@p1_player_name] < @cantidad_juego && @juego_partida.resultados[@p2_player_name] < @cantidad_juego
+    end
+
+    # Revisar si no se ha cumplido la condicion solocitada por el usuario
+    def check_condition()
+        case @modo_juego
+            when :Rondas
+                return check_rounds()
+            when :Alcanzar
+                return check_scope()
+        end
+    end
+
     # Cambia el estado de la configuracion de la ronda
     def state_rounds_options(state)
         @modo_juego_selector.state = state
@@ -578,18 +599,26 @@ Shoes.app(title: "Piedra, Papel, Tijeras, Lagarto, Spock", width: 800, height: 6
     }
 
     FPS = 30.0
-    CHECK_TIME = 3.0 # sec
+    CHECK_TIME = 1.0 # sec
     last = now = Time.now
     animate = animate FPS do
         if @juego_iniciado
             now = Time.now
             if now - last > CHECK_TIME
-                if check_manuals_ready()
-                    @juego_partida.ronda()
+                if check_condition()
+                    if check_manuals_ready()
+                        if @modo_juego == :Rondas
+                            @cantidad_juego -= 1
+                        end
+                        @juego_partida.ronda()
+                        update_game_ui()
+                        reset_manuals_options()
+                    end
+                else
                     update_game_ui()
-                    reset_manuals_options()
+                    state_rounds_options(nil)
+                    disable_manuals_options()
                 end
-
                 last = Time.now
             end
         end
