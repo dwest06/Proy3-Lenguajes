@@ -132,7 +132,6 @@ Shoes.app(title: "Piedra, Papel, Tijeras, Lagarto, Spock") {
             when NilClass
                 contenedor.path = "./icons/nil.png"
         end
-        debug("#{prev_play.to_s} : #{contenedor.path}")
     end
 
     # Revisa un string y solo deja los caracteres validos de un float sin signo
@@ -231,8 +230,8 @@ Shoes.app(title: "Piedra, Papel, Tijeras, Lagarto, Spock") {
 
     # Genera las opciones de la estrategia copiar
     def generate_copy_options()
-        res = list_box items: @players_jugadas.keys,
-            width: 120, choose: @players_jugadas.keys[0], margin_left: 4
+        res = list_box( items: @players_jugadas.keys,
+            width: 120, choose: @players_jugadas.keys[0], margin_left: 4)
             para "Se tiene que seleccionar una opcion como la jugada inicial", size: "xx-small"
         return res
     end
@@ -348,14 +347,14 @@ Shoes.app(title: "Piedra, Papel, Tijeras, Lagarto, Spock") {
             border("#BE8", strokewidth: 6)
             flow(margin: 6, margin_bottom: 0) do
                 # Izquierda
-                stack :width => '50%', :margin => 6 do
-                    background @players_background
+                stack(width: '50%', margin: 6) do
+                    background(@players_background)
                     border(@players_border, strokewidth: 6)
                     stack(margin: 6) do
-                        title "Jugador 1"
+                        title("Jugador 1")
                         subtitle("Seleccionar Estrategia", size: "small", weight: "bold")
-                        @p1_estrategia_selector = list_box items: @players_estrategias.keys,
-                            width: 120, choose: @players_estrategias.keys[0], margin_left: 4 do |list|
+                        @p1_estrategia_selector = list_box(items: @players_estrategias.keys,
+                            width: 120, choose: @players_estrategias.keys[0], margin_left: 4) do |list|
                             @p1_estrategia_text.text = "Estrategia #{list.text} Selecionada"
 
                             @p1_estrategia = @players_estrategias[list.text]
@@ -379,18 +378,18 @@ Shoes.app(title: "Piedra, Papel, Tijeras, Lagarto, Spock") {
                             end
                         end
                         @p1_estrategia_text = para "Estrategia no seleccionada"
-                        @p1_strategy_stack = stack(hidden: true) { }
+                        @p1_strategy_stack = stack(hidden: true)
                     end
                 end
                 # Derecha
-                stack :width => '50%', :align => "right", :margin => 6 do
-                    background @players_background
+                stack(width: '50%', margin: 6) do
+                    background(@players_background)
                     border(@players_border, strokewidth: 6)
                     stack(margin: 6) do
-                        title "Jugador 2"
+                        title("Jugador 2")
                         subtitle("Seleccionar Estrategia", size: "small", weight: "bold")
-                        @p2_estrategia_selector = list_box items: @players_estrategias.keys,
-                            width: 120, choose: @players_estrategias.keys[0], margin_left: 4 do |list|
+                        @p2_estrategia_selector = list_box(items: @players_estrategias.keys,
+                            width: 120, choose: @players_estrategias.keys[0], margin_left: 4) do |list|
                             @p2_estrategia_text.text = "Estrategia #{list.text} Selecionada"
 
                             @p2_estrategia = @players_estrategias[list.text]
@@ -414,28 +413,28 @@ Shoes.app(title: "Piedra, Papel, Tijeras, Lagarto, Spock") {
                             end
                         end
                         @p2_estrategia_text = para "Estrategia no seleccionada"
-                        @p2_strategy_stack = stack(hidden: true) { }
+                        @p2_strategy_stack = stack(hidden: true)
                         
                     end
                 end
             end
-            flow :margin => 6, :width => '100%', :margin_left => 12, :margin_bottom => 0 do
+            flow(margin: 6, width: '100%', margin_left: 12, margin_bottom: 0) do
                 @iniciar_juego = button "Iniciar Partida", width: '33%'
                 @detener_juego = button "Detener Partida", width: '33%'
                 @reiniciar_juego = button "Reiniciar Partida", width: '33%'
             end
-            flow :margin => 6, :width => '100%', :margin_left => 12, :margin_bottom => 0 do
-                @rondas_juego = title "Ronda: 0", size: 'small', weight: "bold", margin_right: 12, margin_left: 0
+            flow(margin: 6, width: '100%', margin_left: 12, margin_bottom: 0) do
+                @rondas_juego = title("Ronda: 0", size: 'small', weight: "bold", margin_right: 12, margin_left: 0)
                 @p1_score = title("Puntos de Jugador 1: 0", size: "small", 
                     weight: "bold", margin_right: 12)
                 @p2_score = title("Puntos de Jugador 2: 0", size: "small", 
                     weight: "bold", margin_right: 6)
             end
             
-            flow :margin => 6, :width => '100%', :margin_left => 12, :margin_bottom => 0 do
+            flow(margin: 6, width: '100%', margin_left: 12, margin_bottom: 0) do
                 para "Modo de Juego: ", margin_left: 0
-                @modo_juego_selector = list_box items: @players_modos.keys,
-                    width: 120, choose: @players_modos.keys[0], margin_left: 4, state: "disabled" do |list|
+                @modo_juego_selector = list_box(items: @players_modos.keys,
+                    width: 120, choose: @players_modos.keys[0], margin_left: 4, state: "disabled") do |list|
                     @modo_juego = @players_modos[list.text]
                 end
                 @cantidad_editline_juego = edit_line "1", state: "disabled", width: 40, margin_left: 8
@@ -455,7 +454,7 @@ Shoes.app(title: "Piedra, Papel, Tijeras, Lagarto, Spock") {
                     end
                 }
             end
-            flow :margin => 6, :width => '100%', :margin_left => 12 do
+            flow(margin: 6, width: '100%', margin_left: 12) do
                 flow(width: '50%') {@p1_icon = image "./icons/init.png", width: '250px'}
                 flow(width: '50%') {@p2_icon = image "./icons/init.png", width: '250px'}
             end
@@ -615,6 +614,7 @@ Shoes.app(title: "Piedra, Papel, Tijeras, Lagarto, Spock") {
                         reset_manuals_options()
                     end
                 else
+                    @juego_iniciado = false
                     update_game_ui()
                     state_rounds_options(nil)
                     disable_manuals_options()
