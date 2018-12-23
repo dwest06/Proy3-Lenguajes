@@ -355,7 +355,7 @@ Shoes.app(title: "Piedra, Papel, Tijeras, Lagarto, Spock", width: 800, height: 6
                         title "Jugador 1"
                         subtitle("Seleccionar Estrategia", size: "small", weight: "bold")
                         @p1_estrategia_selector = list_box items: @players_estrategias.keys,
-                            width: 120, choose: @players_estrategias.keys[0], margin_left: 4 do |list|
+                            width: 120, choose: @players_estrategias.keys[0], margin: 4 do |list|
                             @p1_estrategia_text.text = "Estrategia #{list.text} Selecionada"
 
                             @p1_estrategia = @players_estrategias[list.text]
